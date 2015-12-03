@@ -1,0 +1,69 @@
+JWasm v2.11, Oct 20 2013
+TPK.asm
+                                ;       Program: Boot-loader and TPK - Timer Pre-emptive Kernel
+                                ;   Description: Bootstraps the computer to a small OS
+                                ;        Author: Jared Messer and Mark Bixler
+                                ;          Date: 
+                                ;         Notes: 
+                                ; Help Received: 
+
+                                ; Is all this right?
+                                .model small
+                                .386
+                                .stack 100h
+
+                                .data
+
+00000000                        .code
+00000000                        main proc
+00000000  B80000                    mov  ax, DGROUP          ; @data is the data segment that DOS sets up.
+00000003  8ED8                      mov  ds, ax             ; These two lines are required for all programs
+
+00000005                        main endp
+
+                                end main
+
+
+Macros:
+
+                N a m e                 Type
+
+@CatStr  . . . . . . . . . . . .        Func
+@Environ . . . . . . . . . . . .        Func
+@InStr . . . . . . . . . . . . .        Func
+@SizeStr . . . . . . . . . . . .        Func
+@SubStr  . . . . . . . . . . . .        Func
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+$$SYMBOLS  . . . . . . . . . . .        32 Bit   0000004E Byte    Private 'DEBSYM'
+$$TYPES  . . . . . . . . . . . .        32 Bit   00000016 Byte    Private 'DEBTYP'
+_TEXT  . . . . . . . . . . . . .        16 Bit   0005     Word    Public  'CODE'
+DGROUP . . . . . . . . . . . . .        GROUP
+_DATA  . . . . . . . . . . . . .        16 Bit   0000     Word    Public  'DATA'
+STACK  . . . . . . . . . . . . .        16 Bit   0100     Para    Stack   'STACK'
+
+
+Procedures, parameters and locals:
+
+                N a m e                 Type     Value    Segment  Length
+
+main . . . . . . . . . . . . . .        P Near   0000     _TEXT    0005 Private  
+
+
+Symbols:
+
+                N a m e                 Type       Value     Attr
+
+@CodeSize  . . . . . . . . . . .        Number             0h 
+@DataSize  . . . . . . . . . . .        Number             0h 
+@Interface . . . . . . . . . . .        Number             0h 
+@Model . . . . . . . . . . . . .        Number             2h 
+@code  . . . . . . . . . . . . .        Text   _TEXT
+@data  . . . . . . . . . . . . .        Text   DGROUP
+@stack . . . . . . . . . . . . .        Text   DGROUP
+
+TPK.asm: 22 lines, 2 passes, 0 ms, 0 warnings, 0 errors
