@@ -5,6 +5,12 @@
 ;         Notes: 
 ; Help Received: 
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; THIS WILL BE EXTREMELY HELPFUL
+; https://www.reinterpretcast.com/creating-a-bare-bones-bootloader
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ; Is all this right?
 .model small
 .386
