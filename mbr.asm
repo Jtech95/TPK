@@ -1,7 +1,7 @@
-; CpS 230: Bootloader Template
+; CpS 230: Bootloader
 ;-----------------------------
 ; originally by Mr. J
-; modified by __________
+; modified by Messer and Bixler
 .model tiny
 
 
@@ -15,10 +15,11 @@ start:	jmp	main			; Boot loader starts with a jump instruction to our entry code
 
 disknum	byte	?
 
-msg	byte	"CpS 230 Bootloader Example", 13, 10
-	byte	"--------------------------", 13, 10
+msg	byte	"CpS 230 Bootloader and TPK by Bixler and Messer", 13, 10
+	byte	"-----------------------------------------------", 13, 10
 	byte	13, 10
-	byte	"Hello, world!  Press any key to reboot...", 0
+	byte	"Hello. This is the Ghost of Kernel Sanders.", 13, 10
+	byte	"Press any key to execute the Kernel....", 0
 	
 ; Main is our "real" entry point
 main proc
@@ -27,9 +28,9 @@ main proc
 	mov	ds, ax			; Tiny model (data segment == code segment)
 	
 	; Set up stack
-	mov	ax, 0800h		; This will be our kernel's [one] segment, so use it now
+	mov	ax, 0800h		; This will be Kernel Sander's [one] segment, so use it now
 	mov	ss, ax
-	xor	sp, sp			; Stack pointer starts at the TOP of kernel segment
+	xor	sp, sp			; Stack pointer starts at the TOP of Sander's segment
 					; (first PUSH will decrement by 2, to 0FFFEh)
 	
 	mov	[disknum], dl		; The BIOS should have told us what disk we booted from here...
@@ -38,15 +39,34 @@ main proc
 	mov	dx, offset msg
 	call	print_string
 	
-	; Wait for a keystroke
+	; Wait for the stroke of a key
 	mov	ah, 10h
 	int	16h
 	
-	; Invoke the BIOS "warm boot" command
-	; (reboot using same "disk" number)
-	; (this will actually kill DOSBox!)
-	mov	dl, [disknum]
-	int	19h
+	; Load Sanders to 0800h
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	; Reads sectors from disk into memory using BIOS services
+	mov	dl, [disknum]		; boot drive
+	mov	cx, 0002h		; cylinder 0 sector 2
+	xor	dh, dh			; head 0
+	mov	al, 000Ch		; read 12 sectors (2 - 14)		TODO: Change this to Sander's size eventually
+	mov	bx, 0800h		; destination
+	
+	mov	ah, 02h    ; read designated sectors into memory
+	int	13h
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	; Execute Sanders
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	mov	cs, bx			; Set Sander's cs to bx=0800h
+	mov	ds, bx			; Tiny model (data segment == code segment)
+	; Stack is already set up
+	jmp	bx
+	
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
 main endp
 
 ; Function: prints a NUL-terminated string

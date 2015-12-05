@@ -1,0 +1,152 @@
+JWasm v2.11, Oct 20 2013
+mbr.asm
+                                ; CpS 230: Bootloader
+                                ;-----------------------------
+                                ; originally by Mr. J
+                                ; modified by Messer and Bixler
+                                .model tiny
+
+
+                                .code
+
+                                ; Set offset of the following code
+                                org	7C00h
+00007C00  E9BA00                start:	jmp	main			; Boot loader starts with a jump instruction to our entry code
+
+                                ; Data sitting between the initial jmp and the actual code
+
+00007C03  00                    disknum	byte	?
+
+00007C04  437053203233302042    msg	byte	"CpS 230 Bootloader and TPK by Bixler and Messer", 13, 10
+00007C35  2D2D2D2D2D2D2D2D2D    	byte	"-----------------------------------------------", 13, 10
+00007C66  0D0A                  	byte	13, 10
+00007C68  48656C6C6F2E205468    	byte	"Hello. This is the Ghost of Kernel Sanders.", 13, 10
+00007C95  507265737320616E79    	byte	"Press any key to execute the Kernel....", 0
+                                	
+                                ; Main is our "real" entry point
+00007CBD                        main proc
+                                	; Set up data segment
+00007CBD  8CC8                  	mov	ax, cs			; Discover our code segment (better be 0000h)
+00007CBF  8ED8                  	mov	ds, ax			; Tiny model (data segment == code segment)
+                                	
+                                	; Set up stack
+00007CC1  B80008                	mov	ax, 0800h		; This will be Kernel Sander's [one] segment, so use it now
+00007CC4  8ED0                  	mov	ss, ax
+00007CC6  33E4                  	xor	sp, sp			; Stack pointer starts at the TOP of Sander's segment
+                                					; (first PUSH will decrement by 2, to 0FFFEh)
+                                	
+00007CC8  8816037C              	mov	[disknum], dl		; The BIOS should have told us what disk we booted from here...
+                                	
+                                	; Print message
+00007CCC  BA047C                	mov	dx, offset msg
+00007CCF  E81C00                	call	print_string
+                                	
+                                	; Wait for the stroke of a key
+00007CD2  B410                  	mov	ah, 10h
+00007CD4  CD16                  	int	16h
+                                	
+                                	; Load Sanders to 0800h
+                                	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                	
+                                	; Reads sectors from disk into memory using BIOS services
+00007CD6  8A16037C              	mov	dl, [disknum]		; boot drive
+00007CDA  B90200                	mov	cx, 0002h		; cylinder 0 sector 2
+00007CDD  32F6                  	xor	dh, dh			; head 0
+00007CDF  B00C                  	mov	al, 000Ch		; read 12 sectors (2 - 14)		TODO: Change this to Sander's size eventually
+00007CE1  BB0008                	mov	bx, 0800h		; destination
+                                	
+00007CE4  B402                  	mov	ah, 02h    ; read designated sectors into memory
+00007CE6  CD13                  	int	13h
+                                	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                	
+                                	; Execute Sanders
+                                	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                	
+00007CE8  8ECB                  	mov	cs, bx			; Set Sander's cs to bx=0800h
+00007CEA  8EDB                  	mov	ds, bx			; Tiny model (data segment == code segment)
+                                	; Stack is already set up
+00007CEC  FFE3                  	jmp	bx
+                                	
+                                	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                	
+00007CEE                        main endp
+
+                                ; Function: prints a NUL-terminated string
+                                ; Receives: DX=offset of string (in DS)
+                                ; Returns: none
+                                ; Requires: NUL terminator at end of string
+                                ; Clobbers: none
+00007CEE                        print_string proc
+00007CEE  50                    	push	ax
+00007CEF  56                    	push	si
+                                	
+00007CF0  8BF2                  	mov	si, dx
+00007CF2                        ps_loop:
+00007CF2  AC                    	lodsb
+00007CF3  3C00                  	cmp	al, 0
+00007CF5  7406                  	je	ps_done
+00007CF7  B40E                  	mov	ah, 0eh
+00007CF9  CD10                  	int	10h
+00007CFB  EBF5                  	jmp	ps_loop
+00007CFD                        ps_done:
+
+00007CFD  5E                    	pop	si
+00007CFE  58                    	pop	ax
+00007CFF                        	ret
+00007D00                        print_string endp
+
+
+                                ; Include magic MBR marker WORD at end of 512-byte sector
+                                org	start+510
+00007DFE  55AA                  magic	word	0AA55h
+
+                                end
+
+
+Macros:
+
+                N a m e                 Type
+
+@CatStr  . . . . . . . . . . . .        Func
+@Environ . . . . . . . . . . . .        Func
+@InStr . . . . . . . . . . . . .        Func
+@SizeStr . . . . . . . . . . . .        Func
+@SubStr  . . . . . . . . . . . .        Func
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+DGROUP . . . . . . . . . . . . .        GROUP
+_TEXT  . . . . . . . . . . . . .        16 Bit   7E00     Word    Public  'CODE'
+_DATA  . . . . . . . . . . . . .        16 Bit   0000     Word    Public  'DATA'
+
+
+Procedures, parameters and locals:
+
+                N a m e                 Type     Value    Segment  Length
+
+main . . . . . . . . . . . . . .        P Near   7CBD     _TEXT    0031 Public   
+print_string . . . . . . . . . .        P Near   7CEE     _TEXT    0012 Public   
+  ps_done  . . . . . . . . . . .        L Near   7CFD     _TEXT
+  ps_loop  . . . . . . . . . . .        L Near   7CF2     _TEXT
+
+
+Symbols:
+
+                N a m e                 Type       Value     Attr
+
+@CodeSize  . . . . . . . . . . .        Number             0h 
+@DataSize  . . . . . . . . . . .        Number             0h 
+@Interface . . . . . . . . . . .        Number             0h 
+@Model . . . . . . . . . . . . .        Number             1h 
+@code  . . . . . . . . . . . . .        Text   _TEXT
+@data  . . . . . . . . . . . . .        Text   DGROUP
+@stack . . . . . . . . . . . . .        Text   DGROUP
+disknum  . . . . . . . . . . . .        Byte            7C03h _TEXT 
+magic  . . . . . . . . . . . . .        Word            7DFEh _TEXT 
+msg  . . . . . . . . . . . . . .        Byte[49]        7C04h _TEXT 
+start  . . . . . . . . . . . . .        L Near          7C00h _TEXT 
+
+mbr.asm: 101 lines, 2 passes, 0 ms, 0 warnings, 0 errors
