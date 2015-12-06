@@ -63,6 +63,7 @@ main proc
 	mov	cs, bx			; Set Sander's cs to bx=0800h
 	mov	ds, bx			; Tiny model (data segment == code segment)
 	; Stack is already set up
+	; Mr. J: is this all that is needed?
 	jmp	bx
 	
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
