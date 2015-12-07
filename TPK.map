@@ -1,6 +1,6 @@
 JWlink Version 1.9beta 13
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       15/12/02 22:24:09
+Created on:       15/12/07 08:33:13
 Executable Image: TPK.exe
 creating a DOS executable
 
@@ -12,7 +12,7 @@ creating a DOS executable
 Group                           Address              Size
 =====                           =======              ====
 
-DGROUP                          0000:0006            0000010a
+DGROUP                          0000:0000            00000140
 
 
 
@@ -23,9 +23,9 @@ DGROUP                          0000:0006            0000010a
 Segment                Class          Group          Address         Size
 =======                =====          =====          =======         ====
 
-_TEXT                  CODE           AUTO           0000:0000       00000005
-_DATA                  DATA           DGROUP         0000:0006       00000000
-STACK                  STACK          DGROUP         0001:0000       00000100
+_TEXT                  CODE           DGROUP         0000:0000       00000026
+_DATA                  DATA           DGROUP         0002:0006       0000000f
+STACK                  STACK          DGROUP         0004:0000       00000100
 
 
                         +----------------+
@@ -51,6 +51,6 @@ Address        Symbol
                         +-----------------------+
 
 Stack size:  0100 (256.)
-Memory size:  0110 (272.)
-Entry point address: 0000:0000
-Link time: 00:00.00
+Memory size:  0140 (320.)
+Entry point address: 0000:0012
+Link time: 00:00.15
