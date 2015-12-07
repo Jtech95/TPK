@@ -6,9 +6,9 @@
 ; Help Received: 
 
 ; Mr. J, does this need to be stated twice?
-; .model tiny
-; .386
-; .stack 100h
+.model tiny
+.386
+.stack 100h
 
 .data
 TASK_STACKS	equ	SOME ADDRESS
@@ -17,6 +17,7 @@ counter		byte	0
 .code
 
 task1 proc
+task1_start:
 	push	ax
 	mov	al, '|'
 	mov	es:[0], al
@@ -27,6 +28,8 @@ task1 proc
 	mov	al, '\'
 	mov	es:[0], al
 	pop	ax
+	call yield
+	loop	task1_start
 task1 endp
 
 task2 proc
@@ -41,6 +44,7 @@ reset_counter:
 	xor	[counter], [counter]
 after_reset_counter:
 	pop	ax
+	ret
 task2 endp
 
 task3 proc
@@ -56,9 +60,29 @@ task6 proc
 task6 endp
 
 
+yield proc
+	; push all regs
+	; push all flags minus SP
+	; swap sp's with target task
+yield_mid:
+	; pop all flags
+	; pop all regs
+	ret
+yield endp
+
+
 main proc
 	mov  ax, @data			; @data is the data segment that DOS sets up.
 	mov  ds, ax			; These two lines are required for all programs
+	
+	; yield kick-start logic
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+	; move a saved SP into SP
+	;jmp	yield_mid
+	
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
 	
 	; Frame buffer
 	mov	ax, 0B800h

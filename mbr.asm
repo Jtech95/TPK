@@ -59,13 +59,9 @@ main proc
 	
 	; Execute Sanders
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	
-	mov	cs, bx			; Set Sander's cs to bx=0800h
-	mov	ds, bx			; Tiny model (data segment == code segment)
-	; Stack is already set up
-	; Mr. J: is this all that is needed?
-	jmp	bx
-	
+	push	0800h
+	push	0000h
+	retf
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
 main endp
