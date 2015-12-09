@@ -53,17 +53,17 @@ after_reset_counter:
 	jmp task2_start
 task2 endp
 
-task3 proc
-task3 endp
+; task3 proc
+; task3 endp
 
-task4 proc
-task4 endp
+; task4 proc
+; task4 endp
 
-task5 proc
-task5 endp
+; task5 proc
+; task5 endp
 
-task6 proc
-task6 endp
+; task6 proc
+; task6 endp
 
 ; Function: prints a NUL-terminated string
 ; Receives: DX=offset of string (in DS)
@@ -89,15 +89,15 @@ ps_done:
 	ret
 print_string endp
 
-yield proc
-	; push all regs
-	; push all flags minus SP
-	; swap sp's with target task
-yield_mid:
-	; pop all flags
-	; pop all regs
-	ret
-yield endp
+; yield proc
+	; ; push all regs
+	; ; push all flags minus SP
+	; ; swap sp's with target task
+; yield_mid:
+	; ; pop all flags
+	; ; pop all regs
+	; ret
+; yield endp
 
 
 main proc

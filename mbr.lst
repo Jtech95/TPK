@@ -61,12 +61,9 @@ mbr.asm
                                 	
                                 	; Execute Sanders
                                 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                	
-00007CE8  8ECB                  	mov	cs, bx			; Set Sander's cs to bx=0800h
-00007CEA  8EDB                  	mov	ds, bx			; Tiny model (data segment == code segment)
-                                	; Stack is already set up
-00007CEC  FFE3                  	jmp	bx
-                                	
+00007CE8  680008                	push	0800h
+00007CEB  6A00                  	push	0000h
+00007CED  CB                    	retf
                                 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                                 	
 00007CEE                        main endp
@@ -149,4 +146,4 @@ magic  . . . . . . . . . . . . .        Word            7DFEh _TEXT
 msg  . . . . . . . . . . . . . .        Byte[49]        7C04h _TEXT 
 start  . . . . . . . . . . . . .        L Near          7C00h _TEXT 
 
-mbr.asm: 101 lines, 2 passes, 0 ms, 0 warnings, 0 errors
+mbr.asm: 98 lines, 2 passes, 0 ms, 0 warnings, 0 errors
