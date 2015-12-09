@@ -13,40 +13,45 @@
 .data
 TASK_STACKS	equ	SOME ADDRESS
 SP_ARRAY	equ	SOME ADDRESS
-counter		byte	0
+counter		word	0
 message 	byte	"Hello World!!", 0
 .code
 
-; task1 proc
-; task1_start:
-	; push	ax
-	; mov	al, '|'
-	; mov	es:[0], al
-	; mov	al, '/'
-	; mov	es:[0], al
-	; mov	al, '-'
-	; mov	es:[0], al
-	; mov	al, '\'
-	; mov	es:[0], al
-	; pop	ax
-	; call yield
-	; loop	task1_start
-; task1 endp
+ task1 proc
+ 
+ task1_start: 
+	push	ax
+	 mov	al, '|'
+	 mov	es:[0], al
+	 mov	al, '/'
+	 mov	es:[0], al
+	 mov	al, '-'
+	 mov	es:[0], al
+	 mov	al, '\'
+	 mov	es:[0], al
+	 pop	ax
+	 ;call yield
+	 jmp	task1_start
+ task1 endp
 
-; task2 proc
-	; push	ax
-	; mov	al, '>'
-	; mov	es:[counter], al
-	; inc	[counter]
-	; cmp	[counter], 80
-	; je	reset_counter
-	; jmp	after_reset_counter
-; reset_counter:
-	; xor	[counter], [counter]
-; after_reset_counter:
-	; pop	ax
-	; ret
-; task2 endp
+task2 proc
+task2_start:
+	push	ax
+	push	si
+	mov	al, '>'
+	mov si, [counter]
+	mov	es:[si], al
+	inc	[counter]
+	cmp	[counter], 80
+	je	reset_counter
+	jmp	after_reset_counter
+reset_counter:
+	mov counter, 0
+after_reset_counter:
+	pop si
+	pop	ax
+	jmp task2_start
+task2 endp
 
 task3 proc
 task3 endp
@@ -117,10 +122,17 @@ main proc
 	
 	; Task Stacks will start at address something
 	
-	; Hello world
+	Hello world
 	mov dx, OFFSET message 
 	call print_string
 	
+	; code to set up for tasks
+	; mov ah, 0
+	; mov al, 03h ; set graphics mode to text
+	; int 10h
+	
+	;call task1
+	;call task2
 	
 	;exit
 	mov ah, 4Ch
