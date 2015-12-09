@@ -8,9 +8,9 @@ TPK.asm
                                 ; Help Received: 
 
                                 ; Mr. J, does this need to be stated twice?
-                                 .model tiny
-                                 .386
-                                 .stack 100h
+                                .model tiny
+                                .386
+                                .stack 100h
 
                                 .data
  = SOME ADDRESS                 TASK_STACKS	equ	SOME ADDRESS
@@ -19,44 +19,48 @@ TPK.asm
 00000001  48656C6C6F20576F72    message 	byte	"Hello World!!", 0
 00000000                        .code
 
-                                ;task1 proc
-                                ;	push	ax
-                                ;	mov	al, '|'
-                                ;	mov	es:[0], al
-                                ;	mov	al, '/'
-                                ;	mov	es:[0], al
-                                ;	mov	al, '-'
-                                ;	mov	es:[0], al
-                                ;	mov	al, '\'
-                                ;	mov	es:[0], al
-                                ;	pop	ax
-                                ;task1 endp
+                                ; task1 proc
+                                ; task1_start:
+                                	; push	ax
+                                	; mov	al, '|'
+                                	; mov	es:[0], al
+                                	; mov	al, '/'
+                                	; mov	es:[0], al
+                                	; mov	al, '-'
+                                	; mov	es:[0], al
+                                	; mov	al, '\'
+                                	; mov	es:[0], al
+                                	; pop	ax
+                                	; call yield
+                                	; loop	task1_start
+                                ; task1 endp
 
-                                ;task2 proc
-                                ;	push	ax
-                                ;	mov	al, '>'
-                                ;	mov	es:[counter], al
-                                ;	inc	[counter]
-                                ;	cmp	[counter], 80
-                                ;	je	reset_counter
-                                ;	jmp	after_reset_counter
-                                ;reset_counter:
-                                ;	xor	[counter], [counter]
-                                ;after_reset_counter:
-                                ;	pop	ax
-                                ;task2 endp
+                                ; task2 proc
+                                	; push	ax
+                                	; mov	al, '>'
+                                	; mov	es:[counter], al
+                                	; inc	[counter]
+                                	; cmp	[counter], 80
+                                	; je	reset_counter
+                                	; jmp	after_reset_counter
+                                ; reset_counter:
+                                	; xor	[counter], [counter]
+                                ; after_reset_counter:
+                                	; pop	ax
+                                	; ret
+                                ; task2 endp
 
-00000000                        task3 proc
-00000000                        task3 endp
+                                ; task3 proc
+                                ; task3 endp
 
-00000000                        task4 proc
-00000000                        task4 endp
+                                ; task4 proc
+                                ; task4 endp
 
-00000000                        task5 proc
-00000000                        task5 endp
+                                ; task5 proc
+                                ; task5 endp
 
-00000000                        task6 proc
-00000000                        task6 endp
+                                ; task6 proc
+                                ; task6 endp
 
                                 ; Function: prints a NUL-terminated string
                                 ; Receives: DX=offset of string (in DS)
@@ -79,12 +83,32 @@ TPK.asm
 
 0000000F  5E                    	pop	si
 00000010  58                    	pop	ax
-00000011                        	ret
+00000011  C3                    	retn
 00000012                        print_string endp
+
+                                ; yield proc
+                                	; ; push all regs
+                                	; ; push all flags minus SP
+                                	; ; swap sp's with target task
+                                ; yield_mid:
+                                	; ; pop all flags
+                                	; ; pop all regs
+                                	; ret
+                                ; yield endp
+
 
 00000012                        main proc
 00000012  B80000                	mov  ax, DGROUP			; @data is the data segment that DOS sets up.
 00000015  8ED8                  	mov  ds, ax			; These two lines are required for all programs
+                                	
+                                	; yield kick-start logic
+                                	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                	
+                                	; move a saved SP into SP
+                                	;jmp	yield_mid
+                                	
+                                	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                                	
                                 	
                                 	; Frame buffer
 00000017  B800B8                	mov	ax, 0B800h
@@ -123,8 +147,6 @@ Segments and Groups:
 
                 N a m e                 Size     Length   Align   Combine Class
 
-$$SYMBOLS  . . . . . . . . . . .        32 Bit   0000015E Byte    Private 'DEBSYM'
-$$TYPES  . . . . . . . . . . . .        32 Bit   00000080 Byte    Private 'DEBTYP'
 DGROUP . . . . . . . . . . . . .        GROUP
 _TEXT  . . . . . . . . . . . . .        16 Bit   0026     Word    Public  'CODE'
 _DATA  . . . . . . . . . . . . .        16 Bit   000F     Word    Public  'DATA'
@@ -135,12 +157,10 @@ Procedures, parameters and locals:
 
                 N a m e                 Type     Value    Segment  Length
 
-main . . . . . . . . . . . . . .        P Near   0012     _TEXT    0014 Private  
-print_string . . . . . . . . . .        P Near   0000     _TEXT    0012 Private  
-task3  . . . . . . . . . . . . .        P Near   0000     _TEXT    0000 Private  
-task4  . . . . . . . . . . . . .        P Near   0000     _TEXT    0000 Private  
-task5  . . . . . . . . . . . . .        P Near   0000     _TEXT    0000 Private  
-task6  . . . . . . . . . . . . .        P Near   0000     _TEXT    0000 Private  
+main . . . . . . . . . . . . . .        P Near   0012     _TEXT    0014 Public   
+print_string . . . . . . . . . .        P Near   0000     _TEXT    0012 Public   
+  ps_done  . . . . . . . . . . .        L Near   000F     _TEXT
+  ps_loop  . . . . . . . . . . .        L Near   0004     _TEXT
 
 
 Symbols:
@@ -158,7 +178,5 @@ SP_ARRAY . . . . . . . . . . . .        Text   SOME ADDRESS
 TASK_STACKS  . . . . . . . . . .        Text   SOME ADDRESS
 counter  . . . . . . . . . . . .        Byte               0h _DATA 
 message  . . . . . . . . . . . .        Byte[14]           1h _DATA 
-ps_done  . . . . . . . . . . . .        L Near             Fh _TEXT 
-ps_loop  . . . . . . . . . . . .        L Near             4h _TEXT 
 
-TPK.asm: 106 lines, 2 passes, 0 ms, 0 warnings, 0 errors
+TPK.asm: 130 lines, 2 passes, 0 ms, 0 warnings, 0 errors

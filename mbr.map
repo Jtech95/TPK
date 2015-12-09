@@ -1,6 +1,6 @@
 JWlink Version 1.9beta 13
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       15/12/05 17:13:46
+Created on:       15/12/07 08:51:14
 Executable Image: mbr.bin
 creating a RAW Binary Image executable
 
@@ -51,4 +51,4 @@ Warning! W1023: no starting address found, using 00000000
 Stack size:  1000 (4096.)
 Memory size:  7e00 (32256.)
 Entry point address: 00000000
-Link time: 00:00.15
+Link time: 00:00.32
