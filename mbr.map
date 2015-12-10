@@ -1,6 +1,6 @@
 JWlink Version 1.9beta 13
 Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
-Created on:       15/12/07 08:51:14
+Created on:       15/12/10 09:11:48
 Executable Image: mbr.bin
 creating a RAW Binary Image executable
 
@@ -39,7 +39,7 @@ Address        Symbol
 
 Module: mbr.obj(mbr.asm)
 00007cbd*      main
-00007cee*      print_string
+00007cf2*      print_string
 Warning! W1014: stack segment not found
 Warning! W1023: no starting address found, using 00000000
 
@@ -51,4 +51,4 @@ Warning! W1023: no starting address found, using 00000000
 Stack size:  1000 (4096.)
 Memory size:  7e00 (32256.)
 Entry point address: 00000000
-Link time: 00:00.32
+Link time: 00:00.31

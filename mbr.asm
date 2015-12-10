@@ -42,7 +42,7 @@ main proc
 	; Wait for the stroke of a key
 	mov	ah, 10h
 	int	16h
-	
+	;jmp	$
 	; Load Sanders to 0800h
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
@@ -50,13 +50,14 @@ main proc
 	mov	dl, [disknum]		; boot drive
 	mov	cx, 0002h		; cylinder 0 sector 2
 	xor	dh, dh			; head 0
-	mov	al, 000Ch		; read 12 sectors (2 - 14)		TODO: Change this to Sander's size eventually
+	mov	al, 004fh			; read 12 sectors (2 - 14)		TODO: Change this to Sander's size eventually
 	mov	bx, 0800h		; destination
+	mov	es, bx
+	xor	bx, bx
 	
 	mov	ah, 02h    ; read designated sectors into memory
 	int	13h
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	
 	; Execute Sanders
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	push	0800h
