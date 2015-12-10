@@ -16,37 +16,37 @@ SP_ARRAY	equ	SOME ADDRESS
 counter		byte	0
 message 	byte	"Hello World!!", 0
 .code
+jmp	main
+task1 proc
+task1_start:
+	push	ax
+	mov	al, '|'
+	mov	es:[0], al
+	mov	al, '/'
+	mov	es:[0], al
+	mov	al, '-'
+	mov	es:[0], al
+	mov	al, '\'
+	mov	es:[0], al
+	pop	ax
+	call yield
+	loop	task1_start
+task1 endp
 
-; task1 proc
-; task1_start:
-	; push	ax
-	; mov	al, '|'
-	; mov	es:[0], al
-	; mov	al, '/'
-	; mov	es:[0], al
-	; mov	al, '-'
-	; mov	es:[0], al
-	; mov	al, '\'
-	; mov	es:[0], al
-	; pop	ax
-	; call yield
-	; loop	task1_start
-; task1 endp
-
-; task2 proc
-	; push	ax
-	; mov	al, '>'
-	; mov	es:[counter], al
-	; inc	[counter]
-	; cmp	[counter], 80
-	; je	reset_counter
-	; jmp	after_reset_counter
-; reset_counter:
-	; xor	[counter], [counter]
-; after_reset_counter:
-	; pop	ax
-	; ret
-; task2 endp
+task2 proc
+	push	ax
+	mov	al, '>'
+	mov	es:[counter], al
+	inc	[counter]
+	cmp	[counter], 80
+	je	reset_counter
+	jmp	after_reset_counter
+reset_counter:
+	mov	counter, 0
+after_reset_counter:
+	pop	ax
+	ret
+task2 endp
 
 ; task3 proc
 ; task3 endp
@@ -96,8 +96,8 @@ print_string endp
 
 
 main proc
-	mov  ax, @data			; @data is the data segment that DOS sets up.
-	mov  ds, ax			; These two lines are required for all programs
+	mov	ax, cs
+	mov	ds, ax			; Flat memory model
 	
 	; yield kick-start logic
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -123,8 +123,7 @@ main proc
 	
 	
 	;exit
-	mov ah, 4Ch
-	int 21h
+	jmp	$
 main endp
 
 end main

@@ -15,4 +15,4 @@ rem Assemble/link TPK into flat binary file (not an EXE)
 rem Generate floppy disk image with MBR.BIN as the first 512-byte sector
 copy blank_floppy.img boot_floppy.img || exit /b 1
 %DD% bs=512 if=mbr.bin skip=62 of=boot_floppy.img conv=notrunc || exit /b 1
-%DD% bs=512 if=tpk.bin seek=1 of=boot_floppy.img conv=notrunc || exit /b 1
+%DD% bs=512 if=tpk.bin seek=1 of=boot_floppy.img conv=notrunc status=noxfer || exit /b 1
