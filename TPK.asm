@@ -14,6 +14,7 @@
 TASK_STACKS	equ	SOME ADDRESS
 SP_ARRAY	equ	SOME ADDRESS
 counter		word	0
+color		word	15
 message 	byte	"Hello World!!", 0
 .code
 jmp	main
@@ -37,16 +38,26 @@ task2 proc
 task2_start:
 	push	ax
 	push	si
+	push	bx
 	mov	al, '>'
 	mov	si, [counter]
 	mov	es:[si], al
-	inc	[counter]
+	mov bx, [color]
+	mov es:[si+1], bx
+	;inc	[counter]
+	add [counter], 2
+	dec [color]
+	cmp [color], 0
+	jne noColorReset
+	mov color, 15
+noColorReset:
 	cmp	[counter], 80
 	je	reset_counter
 	jmp	after_reset_counter
 reset_counter:
 	mov counter, 0
 after_reset_counter:
+	pop bx
 	pop si
 	pop	ax
 	jmp task2_start
@@ -64,6 +75,20 @@ task3 endp
 
 ; task6 proc
 ; task6 endp
+
+yield proc
+	; ; push all regs
+	pusha
+	; ; push all flags minus SP
+	pushf
+	; ; swap sp's with target task
+yield_mid:
+	; ; pop all flags
+	popf
+	; ; pop all regs
+	popa
+	 ret
+yield endp
 
 ; Function: prints a NUL-terminated string
 ; Receives: DX=offset of string (in DS)
@@ -89,15 +114,7 @@ ps_done:
 	ret
 print_string endp
 
-; yield proc
-	; ; push all regs
-	; ; push all flags minus SP
-	; ; swap sp's with target task
-; yield_mid:
-	; ; pop all flags
-	; ; pop all regs
-	; ret
-; yield endp
+
 
 
 main proc
@@ -122,7 +139,17 @@ main proc
 	
 	; Task Stacks will start at address something
 	
-	call task1
+	;Hello world
+	mov dx, OFFSET message 
+	call print_string
+	
+	; code to set up for tasks
+	mov ah, 0
+	mov al, 03h ; set graphics mode to text
+	int 10h
+	
+	;call task1
+	call task2
 	
 	;exit
 	jmp	$
