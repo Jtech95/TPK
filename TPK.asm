@@ -29,8 +29,8 @@ task1_start:
 	mov	al, '\'
 	mov	es:[0], al
 	pop	ax
-	call yield
-	loop	task1_start
+	;call yield
+	jmp	task1_start
 task1 endp
 
 task2 proc
@@ -38,7 +38,7 @@ task2_start:
 	push	ax
 	push	si
 	mov	al, '>'
-	mov si, [counter]
+	mov	si, [counter]
 	mov	es:[si], al
 	inc	[counter]
 	cmp	[counter], 80
@@ -52,8 +52,9 @@ after_reset_counter:
 	jmp task2_start
 task2 endp
 
-; task3 proc
-; task3 endp
+task3 proc
+	
+task3 endp
 
 ; task4 proc
 ; task4 endp
@@ -121,17 +122,7 @@ main proc
 	
 	; Task Stacks will start at address something
 	
-	Hello world
-	mov dx, OFFSET message 
-	call print_string
-	
-	; code to set up for tasks
-	; mov ah, 0
-	; mov al, 03h ; set graphics mode to text
-	; int 10h
-	
-	;call task1
-	;call task2
+	call task1
 	
 	;exit
 	jmp	$
