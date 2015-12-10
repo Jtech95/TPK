@@ -39,12 +39,12 @@ mbr.asm
                                 	
                                 	; Print message
 00007CCC  BA047C                	mov	dx, offset msg
-00007CCF  E81C00                	call	print_string
+00007CCF  E82000                	call	print_string
                                 	
                                 	; Wait for the stroke of a key
 00007CD2  B410                  	mov	ah, 10h
 00007CD4  CD16                  	int	16h
-                                	
+                                	;jmp	$
                                 	; Load Sanders to 0800h
                                 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                                 	
@@ -52,45 +52,46 @@ mbr.asm
 00007CD6  8A16037C              	mov	dl, [disknum]		; boot drive
 00007CDA  B90200                	mov	cx, 0002h		; cylinder 0 sector 2
 00007CDD  32F6                  	xor	dh, dh			; head 0
-00007CDF  B00C                  	mov	al, 000Ch		; read 12 sectors (2 - 14)		TODO: Change this to Sander's size eventually
+00007CDF  B04F                  	mov	al, 004fh			; read 12 sectors (2 - 14)		TODO: Change this to Sander's size eventually
 00007CE1  BB0008                	mov	bx, 0800h		; destination
+00007CE4  8EC3                  	mov	es, bx
+00007CE6  33DB                  	xor	bx, bx
                                 	
-00007CE4  B402                  	mov	ah, 02h    ; read designated sectors into memory
-00007CE6  CD13                  	int	13h
+00007CE8  B402                  	mov	ah, 02h    ; read designated sectors into memory
+00007CEA  CD13                  	int	13h
                                 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-                                	
                                 	; Execute Sanders
                                 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-00007CE8  680008                	push	0800h
-00007CEB  6A00                  	push	0000h
-00007CED  CB                    	retf
+00007CEC  680008                	push	0800h
+00007CEF  6A00                  	push	0000h
+00007CF1  CB                    	retf
                                 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
                                 	
-00007CEE                        main endp
+00007CF2                        main endp
 
                                 ; Function: prints a NUL-terminated string
                                 ; Receives: DX=offset of string (in DS)
                                 ; Returns: none
                                 ; Requires: NUL terminator at end of string
                                 ; Clobbers: none
-00007CEE                        print_string proc
-00007CEE  50                    	push	ax
-00007CEF  56                    	push	si
+00007CF2                        print_string proc
+00007CF2  50                    	push	ax
+00007CF3  56                    	push	si
                                 	
-00007CF0  8BF2                  	mov	si, dx
-00007CF2                        ps_loop:
-00007CF2  AC                    	lodsb
-00007CF3  3C00                  	cmp	al, 0
-00007CF5  7406                  	je	ps_done
-00007CF7  B40E                  	mov	ah, 0eh
-00007CF9  CD10                  	int	10h
-00007CFB  EBF5                  	jmp	ps_loop
-00007CFD                        ps_done:
+00007CF4  8BF2                  	mov	si, dx
+00007CF6                        ps_loop:
+00007CF6  AC                    	lodsb
+00007CF7  3C00                  	cmp	al, 0
+00007CF9  7406                  	je	ps_done
+00007CFB  B40E                  	mov	ah, 0eh
+00007CFD  CD10                  	int	10h
+00007CFF  EBF5                  	jmp	ps_loop
+00007D01                        ps_done:
 
-00007CFD  5E                    	pop	si
-00007CFE  58                    	pop	ax
-00007CFF                        	ret
-00007D00                        print_string endp
+00007D01  5E                    	pop	si
+00007D02  58                    	pop	ax
+00007D03                        	ret
+00007D04                        print_string endp
 
 
                                 ; Include magic MBR marker WORD at end of 512-byte sector
@@ -124,10 +125,10 @@ Procedures, parameters and locals:
 
                 N a m e                 Type     Value    Segment  Length
 
-main . . . . . . . . . . . . . .        P Near   7CBD     _TEXT    0031 Public   
-print_string . . . . . . . . . .        P Near   7CEE     _TEXT    0012 Public   
-  ps_done  . . . . . . . . . . .        L Near   7CFD     _TEXT
-  ps_loop  . . . . . . . . . . .        L Near   7CF2     _TEXT
+main . . . . . . . . . . . . . .        P Near   7CBD     _TEXT    0035 Public   
+print_string . . . . . . . . . .        P Near   7CF2     _TEXT    0012 Public   
+  ps_done  . . . . . . . . . . .        L Near   7D01     _TEXT
+  ps_loop  . . . . . . . . . . .        L Near   7CF6     _TEXT
 
 
 Symbols:
@@ -146,4 +147,4 @@ magic  . . . . . . . . . . . . .        Word            7DFEh _TEXT
 msg  . . . . . . . . . . . . . .        Byte[49]        7C04h _TEXT 
 start  . . . . . . . . . . . . .        L Near          7C00h _TEXT 
 
-mbr.asm: 98 lines, 2 passes, 0 ms, 0 warnings, 0 errors
+mbr.asm: 99 lines, 2 passes, 0 ms, 0 warnings, 0 errors

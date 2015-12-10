@@ -13,7 +13,7 @@
 .data
 TASK_STACKS	equ	SOME ADDRESS
 SP_ARRAY	equ	SOME ADDRESS
-counter		byte	0
+counter		word	0
 message 	byte	"Hello World!!", 0
 .code
 jmp	main
@@ -34,18 +34,22 @@ task1_start:
 task1 endp
 
 task2 proc
+task2_start:
 	push	ax
+	push	si
 	mov	al, '>'
-	mov	es:[counter], al
+	mov si, [counter]
+	mov	es:[si], al
 	inc	[counter]
 	cmp	[counter], 80
 	je	reset_counter
 	jmp	after_reset_counter
 reset_counter:
-	mov	counter, 0
+	mov counter, 0
 after_reset_counter:
+	pop si
 	pop	ax
-	ret
+	jmp task2_start
 task2 endp
 
 ; task3 proc
@@ -117,10 +121,17 @@ main proc
 	
 	; Task Stacks will start at address something
 	
-	; Hello world
+	Hello world
 	mov dx, OFFSET message 
 	call print_string
 	
+	; code to set up for tasks
+	; mov ah, 0
+	; mov al, 03h ; set graphics mode to text
+	; int 10h
+	
+	;call task1
+	;call task2
 	
 	;exit
 	jmp	$
