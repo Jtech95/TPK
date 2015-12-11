@@ -99,8 +99,9 @@ noReset:
 	jmp task3_top
 task3 endp
 
-; task4 proc
-; task4 endp
+task4 proc
+
+task4 endp
 
 
 
@@ -170,6 +171,26 @@ yield_mid:
 	ret
 yield endp
 
+init_sp_array proc
+	push ax
+	push cx
+	push bx
+	
+	mov ax, offset task_stacks ; get the initial addres of task_stacks
+	add ax, 256 ; move to the first location 256 words in.
+	mov cx, 32 ; loop 32 times
+	mov bx, 0 ; index for sp_array
+	
+loopTop:
+	mov sp_array[bx], ax ; move the current location into the sp array
+	add ax, 256 ; add 256 to move the next task task
+	inc bx
+	loop loopTop
+	
+	pop bx
+	pop cx
+	pop ax
+init_sp_array endp
 
 main proc
 	mov	ax, cs
