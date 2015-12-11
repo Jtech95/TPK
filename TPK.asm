@@ -67,8 +67,6 @@ task1 endp
 ; task2 endp
 
 task2 proc
-	push ax
-	push si
 task2_top:
 	mov al, [task2Char]
 	mov si, [counter2]
@@ -94,8 +92,6 @@ period:
 	mov [task2Char], ' '
 	
 noReset:
-	pop si
-	pop ax
 	call yield
 	jmp task2_top
 task2 endp
@@ -141,20 +137,20 @@ yield proc
 	
 	;swap sp's with target task
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	cmp	[sp_index], 64
-	jae	after_reset_sp_index
-reset_sp_index:
-	mov	[sp_index], 0
 after_reset_sp_index:	
 	mov	si, [sp_index]
 	mov	[sp_array + si], sp		;store old sp on stack
 	inc	[sp_index]
 	inc	[sp_index]			;move to next word on sp stack
+	cmp	[sp_index], 64
+	jb	yield_mid
+reset_sp_index:
+	mov	[sp_index], 0
+yield_mid::
 	mov	si, [sp_index]
 	mov	sp, [sp_array + si]
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
-yield_mid::
 	; pop all flags
 	popf
 	; pop all regs
@@ -170,14 +166,15 @@ yield endp
 
 
 init_stack1 proc
+	push	si
 	push	bp
-	push	sp
-	mov	bp, [init_stacks_counter]
-	mov	sp, [sp_array + bp]
+	mov	bp, sp
+	mov	si, [init_stacks_counter]
+	mov	sp, [sp_array + si]
 	; push task1 address for yield's return
 	push	offset task1
 	; push regs
-	pushw	0
+	pushw	0		; use these for param passing
 	pushw	0
 	pushw	0
 	pushw	0
@@ -185,15 +182,19 @@ init_stack1 proc
 	pushw	0
 	pushw	0
 	pushf
+	mov	[sp_array + si], sp
+	push	bp
 	pop	sp
 	pop	bp
+	pop	si
 	ret
 init_stack1 endp
 init_stack2 proc
+	push	si
 	push	bp
-	push	sp
-	mov	bp, [init_stacks_counter]
-	mov	sp, [sp_array + bp]
+	mov	bp, sp				; store old sp
+	mov	si, [init_stacks_counter]	
+	mov	sp, sp_array[si]		
 	; push task1 address for yield's return
 	push	offset task2
 	; push regs
@@ -205,8 +206,11 @@ init_stack2 proc
 	pushw	0
 	pushw	0
 	pushf
+	mov	[sp_array + si], sp
+	push	bp
 	pop	sp
 	pop	bp
+	pop	si
 	ret
 init_stack2 endp
 
@@ -221,15 +225,19 @@ init_sp_array proc
 	mov bx, 0 ; index for sp_array
 	
 loopTop:
-	mov sp_array[bx], ax ; move the current location into the sp array
+	mov [sp_array + bx], ax ; move the current location into the sp array
 	add ax, 256 ; add 256 to move the next task task
+	inc bx
 	inc bx
 	loop loopTop
 	
 	pop bx
 	pop cx
 	pop ax
+	ret
 init_sp_array endp
+
+
 
 main proc
 	mov	ax, cs
@@ -257,7 +265,7 @@ main_loopy2:
 	inc	init_stacks_counter
 	inc	init_stacks_counter
 	loop	main_loopy2
-	
+
 	jmp	yield_mid
 	
 	;call task1
