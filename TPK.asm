@@ -5,17 +5,18 @@
 ;         Notes: 
 ; Help Received: 
 
-; Mr. J, does this need to be stated twice?
 .model tiny
 .386
 .stack 100h
 
 .data
-TASK_STACKS	equ	SOME ADDRESS
-SP_ARRAY	equ	SOME ADDRESS
+task_stacks	word	256*32 dup (0)	;space for task stacks
+stack_size	word	256
+sp_array	word	32*2 dup (0)	;space for the SP stack
+sp_index	word	0
+old_sp		word	?
 counter		word	0
 color		word	15
-message 	byte	"Hello World!!", 0
 .code
 jmp	main
 task1 proc
@@ -30,7 +31,7 @@ task1_start:
 	mov	al, '\'
 	mov	es:[0], al
 	pop	ax
-	;call yield
+	call	yield
 	jmp	task1_start
 task1 endp
 
@@ -42,16 +43,15 @@ task2_start:
 	mov	al, '>'
 	mov	si, [counter]
 	mov	es:[si], al
-	mov bx, [color]
-	mov es:[si+1], bx
-	;inc	[counter]
+	mov	bx, [color]
+	mov	es:[si+1], bx
 	add [counter], 2
 	dec [color]
 	cmp [color], 0
 	jne noColorReset
 	mov color, 15
 noColorReset:
-	cmp	[counter], 80
+	cmp	[counter], 160
 	je	reset_counter
 	jmp	after_reset_counter
 reset_counter:
@@ -59,7 +59,8 @@ reset_counter:
 after_reset_counter:
 	pop bx
 	pop si
-	pop	ax
+	pop ax
+	call yield
 	jmp task2_start
 task2 endp
 
@@ -76,19 +77,6 @@ task3 endp
 ; task6 proc
 ; task6 endp
 
-yield proc
-	; ; push all regs
-	pusha
-	; ; push all flags minus SP
-	pushf
-	; ; swap sp's with target task
-yield_mid:
-	; ; pop all flags
-	popf
-	; ; pop all regs
-	popa
-	 ret
-yield endp
 
 ; Function: prints a NUL-terminated string
 ; Receives: DX=offset of string (in DS)
@@ -115,42 +103,78 @@ ps_done:
 print_string endp
 
 
+yield proc
+	; push all regs minus SP
+	push	ax
+	push	cx
+	push	dx
+	push	bx
+	push	bp
+	push	si
+	push	di
+	; push all flags
+	pushf
+	
+	;swap sp's with target task
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	cmp	[sp_index], 64
+	jae	after_reset_sp_index
+reset_sp_index:
+	mov	[sp_index], 0
+after_reset_sp_index:	
+	mov	si, [sp_index]
+	mov	[sp_array + si], sp		;store old sp on stack
+	inc	[sp_index]
+	inc	[sp_index]			;move to next word on sp stack
+	mov	si, [sp_index]
+	mov	sp, [sp_array + si]
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
+yield_mid:
+	; pop all flags
+	popf
+	; pop all regs
+	pop	di
+	pop	si
+	pop	bp
+	pop	bx
+	pop	dx
+	pop	cx
+	pop	ax
+	ret
+yield endp
 
 
 main proc
 	mov	ax, cs
 	mov	ds, ax			; Flat memory model
 	
-	; yield kick-start logic
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	
-	; move a saved SP into SP
-	;jmp	yield_mid
-	
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	
-	
 	; Frame buffer
 	mov	ax, 0B800h
 	mov	es, ax
 	
-	; Mr. J: is each task a proc
-	; Mr. J: what is wrong with task2? (look at P8)
-	
-	; Task Stacks will start at address something
-	
-	;Hello world
-	mov dx, OFFSET message 
-	call print_string
-	
-	; code to set up for tasks
-	mov ah, 0
-	mov al, 03h ; set graphics mode to text
+	mov ax, 0003h ; set graphics mode to text
 	int 10h
 	
-	;call task1
-	call task2
+	; yield kick-start logic
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; move a saved SP into SP
+	mov	sp, offset task_stacks
+	; push task1 address for yield's return
+	push	offset task1
+	pushw	0
+	pushw	0
+	pushw	0
+	pushw	0
+	pushw	0
+	pushw	0
+	pushw	0
+	pushf
+	push	0800h
 	
+	push	offset yield
+	retf
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	;exit
 	jmp	$
 main endp
