@@ -19,7 +19,7 @@ msg	byte	"CpS 230 Bootloader and TPK by Bixler and Messer", 13, 10
 	byte	"-----------------------------------------------", 13, 10
 	byte	13, 10
 	byte	"Hello. This is the Ghost of Kernel Sanders.", 13, 10
-	byte	"Press any key to execute the Kernel....", 0
+	byte	"Press any key to execute the Kernel....", 13, 10, 0
 	
 ; Main is our "real" entry point
 main proc
