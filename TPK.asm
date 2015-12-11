@@ -16,6 +16,8 @@ sp_index	word	0
 old_sp		word	?
 counter		word	0
 counter2	word	320
+old_segment	word	?
+old_offset	word	?
 task2Char	byte	'.'
 init_stacks_counter	word	0
 color		word	15
@@ -161,7 +163,8 @@ yield_mid::
 	pop	dx
 	pop	cx
 	pop	ax
-	ret
+	; push flags, cs, ip, also ds and es
+	ret	; need a label in middle of isr that this will return to
 yield endp
 
 
@@ -172,7 +175,9 @@ init_stack1 proc
 	mov	si, [init_stacks_counter]
 	mov	sp, [sp_array + si]
 	; push task1 address for yield's return
+	; push iret frame (flags, cs, ip)
 	push	offset task1
+	;offset of timer isr
 	; push regs
 	pushw	0		; use these for param passing
 	pushw	0
@@ -266,6 +271,22 @@ main_loopy2:
 	inc	init_stacks_counter
 	loop	main_loopy2
 
+	; Install Interupt handler
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	cli
+	xor	ax, ax
+	mov	es, ax				; es is 0000, for IVT
+	
+	mov	bx, es:[32]
+	mov	[old_offset], bx		; Save old int offset
+	mov	bx, es:[34]
+	mov	[old_segment],  bx		; Save old int segment
+	
+	mov	es:[32], offset ISR_counter	; Install the addresses of ISR_counter
+	mov	es:[34], cs
+	;do not sti	
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	
 	jmp	yield_mid
 	
 	;call task1
@@ -274,5 +295,22 @@ main_loopy2:
 	;exit
 	jmp	$
 main endp
+
+
+;Description:   Prints the integers 1-9 in the top left corner of the screen
+;		everytime interrupt vector 8 is activated
+;Receives:      n/a
+;Returns:       n/a
+;Requires:      byte variable called "isrcounter" set to '0'
+;		word variable called "old_segment" set to old interrupt segment
+;		word variable called "old_offset"  set to old interrupt offset
+;Clobbers:      counter variable
+ISR_counter proc
+	call yields
+	; Push segment and offset of old Int Vector for retf later
+	push	[old_segment]
+	push	[old_offset]
+	retf
+ISR_counter endp
 
 end main
