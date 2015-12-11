@@ -14,6 +14,8 @@
 TASK_STACKS	equ	SOME ADDRESS
 SP_ARRAY	equ	SOME ADDRESS
 counter		word	0
+counter2	word	320
+task3Char	byte	'.'
 color		word	15
 message 	byte	"Hello World!!", 0
 .code
@@ -63,17 +65,41 @@ after_reset_counter:
 	jmp task2_start
 task2 endp
 
-; task3 proc
-; task3 endp
+task3 proc
+	push ax
+	push si
+task3_top:
+	mov al, [task3Char]
+	mov si, [counter2]
+	mov es:[si], al ; write chareacter to screen
+	mov bx, [color]
+	mov es:[si+1], bx
+	add [counter2], 2 ; add 2 to the counter to get to the next screen location.
+	dec [color]
+	cmp [color], 0
+	jne task3noColorReset
+	mov color, 15
+task3noColorReset:
+	cmp [counter2], 480 ; cheick if the counter is at the end of the row and if so reset it
+	je reset
+	jne noReset
+reset:
+	mov [counter2], 320 ; reset counter to begining of row
+	cmp al, '.'
+	je period ; if current char == '.' set it to ' '
+	mov [task3Char], '.'
+	jmp task3_top
+period:
+	mov [task3Char], ' '
+	
+noReset:
+	pop si
+	pop ax
+	jmp task3_top
+task3 endp
 
 ; task4 proc
 ; task4 endp
-
-; task5 proc
-; task5 endp
-
-; task6 proc
-; task6 endp
 
 yield proc
 	; ; push all regs
@@ -149,6 +175,7 @@ main proc
 	
 	;call task1
 	;call task2
+	;call task3
 	
 	;exit
 	jmp	$
