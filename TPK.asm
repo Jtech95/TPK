@@ -22,16 +22,23 @@ color		word	15
 .code
 jmp	main
 task1 proc
+	mov bx, 0
 task1_start:
 	push	ax
 	mov	al, '|'
-	mov	es:[0], al
+	mov	es:[si], al
 	mov	al, '/'
-	mov	es:[0], al
+	mov	es:[si], al
 	mov	al, '-'
-	mov	es:[0], al
+	mov	es:[si], al
 	mov	al, '\'
-	mov	es:[0], al
+	mov	es:[si], al
+	mov es:[si+1], bx
+	inc bx
+	cmp bx, 100
+	jb DontReset
+	mov bx, 0
+DontReset:
 	pop	ax
 	call	yield
 	jmp	task1_start
@@ -67,29 +74,34 @@ task1 endp
 ; task2 endp
 
 task2 proc
+	mov al, '.'
+	mov bx, 15
+	mov dx, si
+	mov di, si
+	add dx, 160
 task2_top:
-	mov al, [task2Char]
-	mov si, [counter2]
+	;mov al, [task2Char]
+	;mov si, [counter2]
 	mov es:[si], al ; write chareacter to screen
-	mov bx, [color]
+	;mov bx, [color]
 	mov es:[si+1], bx
-	add [counter2], 2 ; add 2 to the counter to get to the next screen location.
-	dec [color]
-	cmp [color], 0
+	add si, 2 ; add 2 to the counter to get to the next screen location.
+	dec bx
+	cmp bx, 0
 	jne task2noColorReset
-	mov color, 15
+	mov bx, 15
 task2noColorReset:
-	cmp [counter2], 480 ; cheick if the counter is at the end of the row and if so reset it
+	cmp si, dx ; cheick if the counter is at the end of the row and if so reset it
 	je reset
 	jne noReset
 reset:
-	mov [counter2], 320 ; reset counter to begining of row
+	mov si, di ; reset counter to begining of row
 	cmp al, '.'
 	je period ; if current char == '.' set it to ' '
-	mov [task2Char], '.'
+	mov al, '.'
 	jmp task2_top
 period:
-	mov [task2Char], ' '
+	mov al, ' '
 	
 noReset:
 	call yield
@@ -179,7 +191,7 @@ init_stack1 proc
 	pushw	0
 	pushw	0
 	pushw	0
-	pushw	0
+	push	bx
 	pushw	0
 	pushf
 	mov	[sp_array + si], sp
@@ -203,7 +215,7 @@ init_stack2 proc
 	pushw	0
 	pushw	0
 	pushw	0
-	pushw	0
+	push	bx
 	pushw	0
 	pushf
 	mov	[sp_array + si], sp
@@ -253,17 +265,21 @@ main proc
 	call init_sp_array
 	
 	mov	cx, 16
+	mov bx, 0
 main_loopy1:
 	call	init_stack1
 	inc	init_stacks_counter		; initially 0
 	inc	init_stacks_counter
+	add bx, 10
 	loop	main_loopy1
 	
 	mov	cx, 16
+	mov bx, 320
 main_loopy2:
 	call	init_stack2
 	inc	init_stacks_counter
 	inc	init_stacks_counter
+	add bx, 160
 	loop	main_loopy2
 
 	jmp	yield_mid
