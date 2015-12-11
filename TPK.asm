@@ -11,13 +11,13 @@
 
 .data
 task_stacks	word	256*32 dup (0)	;space for task stacks
-stack_size	word	256
-sp_array	word	32*2 dup (0)	;space for the SP stack
+sp_array	word	32 dup (0)	;space for the SP stack
 sp_index	word	0
 old_sp		word	?
 counter		word	0
 counter2	word	320
-task3Char	byte	'.'
+task2Char	byte	'.'
+init_stacks_counter	word	0
 color		word	15
 .code
 jmp	main
@@ -37,40 +37,40 @@ task1_start:
 	jmp	task1_start
 task1 endp
 
-task2 proc
-task2_start:
-	push	ax
-	push	si
-	push	bx
-	mov	al, '>'
-	mov	si, [counter]
-	mov	es:[si], al
-	mov	bx, [color]
-	mov	es:[si+1], bx
-	add [counter], 2
-	dec [color]
-	cmp [color], 0
-	jne noColorReset
-	mov color, 15
-noColorReset:
-	cmp	[counter], 160
-	je	reset_counter
-	jmp	after_reset_counter
-reset_counter:
-	mov counter, 0
-after_reset_counter:
-	pop bx
-	pop si
-	pop ax
-	call yield
-	jmp task2_start
-task2 endp
+; task2 proc
+; task2_start:
+	; push	ax
+	; push	si
+	; push	bx
+	; mov	al, '>'
+	; mov	si, [counter]
+	; mov	es:[si], al
+	; mov	bx, [color]
+	; mov	es:[si+1], bx
+	; add [counter], 2
+	; dec [color]
+	; cmp [color], 0
+	; jne noColorReset
+	; mov color, 15
+; noColorReset:
+	; cmp	[counter], 160
+	; je	reset_counter
+	; jmp	after_reset_counter
+; reset_counter:
+	; mov counter, 0
+; after_reset_counter:
+	; pop bx
+	; pop si
+	; pop ax
+	; call yield
+	; jmp task2_start
+; task2 endp
 
-task3 proc
+task2 proc
 	push ax
 	push si
-task3_top:
-	mov al, [task3Char]
+task2_top:
+	mov al, [task2Char]
 	mov si, [counter2]
 	mov es:[si], al ; write chareacter to screen
 	mov bx, [color]
@@ -78,9 +78,9 @@ task3_top:
 	add [counter2], 2 ; add 2 to the counter to get to the next screen location.
 	dec [color]
 	cmp [color], 0
-	jne task3noColorReset
+	jne task2noColorReset
 	mov color, 15
-task3noColorReset:
+task2noColorReset:
 	cmp [counter2], 480 ; cheick if the counter is at the end of the row and if so reset it
 	je reset
 	jne noReset
@@ -88,19 +88,17 @@ reset:
 	mov [counter2], 320 ; reset counter to begining of row
 	cmp al, '.'
 	je period ; if current char == '.' set it to ' '
-	mov [task3Char], '.'
-	jmp task3_top
+	mov [task2Char], '.'
+	jmp task2_top
 period:
-	mov [task3Char], ' '
+	mov [task2Char], ' '
 	
 noReset:
 	pop si
 	pop ax
-	jmp task3_top
-task3 endp
-
-; task4 proc
-; task4 endp
+	call yield
+	jmp task2_top
+task2 endp
 
 
 
@@ -156,7 +154,7 @@ after_reset_sp_index:
 	mov	sp, [sp_array + si]
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	
-yield_mid:
+yield_mid::
 	; pop all flags
 	popf
 	; pop all regs
@@ -170,6 +168,47 @@ yield_mid:
 	ret
 yield endp
 
+init_stack1 proc
+	push	bp
+	push	sp
+	mov	bp, [init_stacks_counter]
+	mov	sp, [sp_array + bp]
+	; push task1 address for yield's return
+	push	offset task1
+	; push regs
+	pushw	0
+	pushw	0
+	pushw	0
+	pushw	0
+	pushw	0
+	pushw	0
+	pushw	0
+	pushf
+	pop	sp
+	pop	bp
+	ret
+init_stack1 endp
+init_stack2 proc
+	push	bp
+	push	sp
+	mov	bp, [init_stacks_counter]
+	mov	sp, [sp_array + bp]
+	; push task1 address for yield's return
+	push	offset task2
+	; push regs
+	pushw	0
+	pushw	0
+	pushw	0
+	pushw	0
+	pushw	0
+	pushw	0
+	pushw	0
+	pushf
+	pop	sp
+	pop	bp
+	ret
+init_stack2 endp
+
 
 main proc
 	mov	ax, cs
@@ -182,29 +221,27 @@ main proc
 	mov ax, 0003h ; set graphics mode to text
 	int 10h
 	
+	call init_sp_array
+	
+	mov	cx, 16
+main_loopy1:
+	call	init_stack1
+	inc	init_stacks_counter		; initially 0
+	inc	init_stacks_counter
+	loop	main_loopy1
+	
+	mov	cx, 16
+main_loopy2:
+	call	init_stack2
+	inc	init_stacks_counter
+	inc	init_stacks_counter
+	loop	main_loopy2
+	
+	jmp	yield_mid
+	
 	;call task1
 	;call task2
-	;call task3
 	
-	; yield kick-start logic
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; move a saved SP into SP
-	mov	sp, offset task_stacks
-	; push task1 address for yield's return
-	push	offset task1
-	pushw	0
-	pushw	0
-	pushw	0
-	pushw	0
-	pushw	0
-	pushw	0
-	pushw	0
-	pushf
-	push	0800h
-	
-	push	offset yield
-	retf
-	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	;exit
 	jmp	$
 main endp
