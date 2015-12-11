@@ -232,6 +232,16 @@ main_loopy2:
 	inc	init_stacks_counter
 	add bx, 160
 	loop	main_loopy2
+	
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; CHANGE TO GRAPHICS MODE
+	
+	; DISPLAY PICTURE
+	
+	; WAIT FOR KEYSTROKE
+	
+	; CHANGE TO TEXT MODE
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 	; Install Interupt handler
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
