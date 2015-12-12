@@ -246,7 +246,7 @@ main_loopy2:
 	; PIT INIT
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 	; COUNT = input hz / frequency 
-	mov	dx, 1193180 / 500	; 100hz, or 10 milliseconds
+	mov	dx, 1193180 / 1000	; 100hz, or 10 milliseconds
  
 	; FIRST send the command word to the PIT. Sets binary counting,
 	; Mode 3, Read or Load LSB first then MSB, Channel 0
