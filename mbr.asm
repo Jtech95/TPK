@@ -19,7 +19,8 @@ msg	byte	"CpS 230 Bootloader and TPK by Bixler and Messer", 13, 10
 	byte	"-----------------------------------------------", 13, 10
 	byte	13, 10
 	byte	"Hello. This is the Ghost of Kernel Sanders.", 13, 10
-	byte	"Press any key to execute the Kernel....", 13, 10, 0
+	byte	"Press any key to execute the Kernel....", 13, 10, 13, 10
+	byte	"Change the timeslice on line 275 in TPK.asm for fun!", 0
 	
 ; Main is our "real" entry point
 main proc
@@ -42,15 +43,14 @@ main proc
 	; Wait for the stroke of a key
 	mov	ah, 10h
 	int	16h
-	;jmp	$
+	
 	; Load Sanders to 0800h
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	
 	; Reads sectors from disk into memory using BIOS services
 	mov	dl, [disknum]		; boot drive
 	mov	cx, 0002h		; cylinder 0 sector 2
 	xor	dh, dh			; head 0
-	mov	al, 004fh			; read 12 sectors (2 - 14)		TODO: Change this to Sander's size eventually
+	mov	al, 004fh			; read 12 sectors (2 - 14)	
 	mov	bx, 0800h		; destination
 	mov	es, bx
 	xor	bx, bx
